@@ -5,6 +5,10 @@ import ShareMenu, { ShareMenuReactView } from "react-native-share-menu";
 import { useDispatch, useSelector } from "react-redux";
 import rootReducer from "../../reducers";
 import actions from "../../actions"
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import ReceiveSharingIntent from 'react-native-receive-sharing-intent';
 
 const buttonAction = () => {
   const dispatch = useDispatch();
@@ -137,12 +141,13 @@ AppRegistry.registerComponent("Test", () => Test);
 AppRegistry.registerComponent("ShareMenuModuleComponent", () => Share);
 
 
-export default App = () => {
+export const FlashScreen = ({navigation}) => {
   const user = useSelector(state => state.user)
   console.log('Just Checking: ' + user.user.name)
 
   const dispatch = useDispatch();
   var demoUser = {name: 'Adi'}
+  var incomingFile;
 
   const localButtonAction = useCallback(
     () => dispatch(actions.userActions.setUser({name: 'Sanchit'})),
@@ -152,6 +157,23 @@ export default App = () => {
   //dispatch(actions.userActions.setUser(demoUser))
   useEffect(()=> {
     //dispatch(actions.userActions.setUser(demoUser))
+    ReceiveSharingIntent.getReceivedFiles(files => {
+      // files returns as JSON Array example
+      //[{ filePath: null, text: null, weblink: null, mimeType: null, contentUri: null, fileName: null, extension: null }]
+      console.log("INside Receive Intents");
+      console.log(files[0].contentUri);
+      incomingFile = files[0].contentUri;
+      if(incomingFile !== undefined)
+      {
+        console.log("Ab jump hoga");
+        navigation.push("Home", {incomingUri: incomingFile});
+      }
+    }, 
+    (error) =>{
+      console.log(error);
+    }, 
+    'ShareMedia' // share url protocol (must be unique to your app, suggest using your apple bundle id)
+    );
   })
 
   
@@ -186,7 +208,16 @@ export default App = () => {
           <Text style = {{color: "red"}}>Log Out</Text>
         </TouchableOpacity>
       </View>
-      <Test/>
+
+      <View>
+        <TouchableOpacity
+        style = {styles.buttonStyle}
+        onPress = {() => {
+          navigation.push("Demo", {name: "Udit"});
+        }}>
+          <Text>Demo page</Text>
+        </TouchableOpacity>
+      </View>
       
     </View>
   );
